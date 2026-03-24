@@ -1,0 +1,112 @@
+{% extends '/base.html' %}
+{% block content %}
+
+
+
+<header>
+  <h1>📍 MyPoints Map</h1>
+  <nav class="nav-links">
+    <a href="/">Главная</a>
+    <a href="/add">Добавить точку</a>
+    <a href="/admin">Админка</a>
+  </nav>
+</header>
+
+<div class="main-container">
+  <aside class="sidebar">
+    <h2>Точки на карте</h2>
+    <p style="color: #666; font-size: 0.9rem;">Последние активности пользователей на проекте.</p>
+    
+    <div class="cta-card">
+      <strong>Хотите добавить своё место?</strong>
+      <a href="/add" class="btn-add">Создать метку</a>
+    </div>
+  </aside>
+
+  <div id="map"></div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
+
+<script>
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://demotiles.maplibre.org/style.json',
+    center: [37.6173, 55.7558],
+    zoom: 4
+  });
+
+  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  map.on('load', () => {
+    // Принудительно обновляем размер при загрузке, чтобы избежать багов с Flexbox
+    map.resize();
+
+    map.addSource('points', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              title: 'Москва',
+              color: '#ff5722',
+              description: 'Центр города и Красная площадь',
+              image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Saint_Basil%27s_Cathedral_and_the_Red_Square.jpg/330px-Saint_Basil%27s_Cathedral_and_the_Red_Square.jpg'
+            },
+            geometry: { type: 'Point', coordinates: [37.6173, 55.7558] }
+          }
+        ]
+      }
+    });
+
+    map.addLayer({
+      id: 'points-layer',
+      type: 'circle',
+      source: 'points',
+      paint: {
+        'circle-radius': 10,
+        'circle-color': ['get', 'color'],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff'
+      }
+    });
+
+    map.on('click', 'points-layer', (e) => {
+      const feature = e.features[0];
+      const p = feature.properties;
+
+      const imgTag = p.image 
+        ? `<img src="${p.image}" class="map-popup-img">` 
+        : '';
+
+      const html = `
+        <div class="map-popup-content">
+          <h3 style="margin:0; font-size:16px;">${p.title}</h3>
+          ${imgTag}
+          <p style="margin:0; color:#555; font-size:13px; line-height:1.4;">
+            ${p.description || 'Описание отсутствует'}
+          </p>
+        </div>
+      `;
+
+      new maplibregl.Popup({ 
+        offset: [0, -12],
+        closeButton: true,
+        anchor: 'bottom'
+      })
+      .setLngLat(feature.geometry.coordinates)
+      .setHTML(html)
+      .addTo(map);
+    });
+
+    map.on('mouseenter', 'points-layer', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'points-layer', () => map.getCanvas().style.cursor = '');
+  });
+  window.addEventListener('load', () => {
+    map.resize();
+  });
+</script>
+
+{% endblock %}

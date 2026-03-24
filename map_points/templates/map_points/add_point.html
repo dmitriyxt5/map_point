@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+    <h1>Добавить точку</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label>Название</label>
+        {{ form.title }}
+
+        <label>Описание</label>
+        {{ form.description }}
+
+        <label>Изображение</label>
+        {{ form.image }}
+
+        <label>Широта</label>
+        {{ form.latitude }}
+
+        <label>Долгота</label>
+        {{ form.longitude }}
+
+        <button type="submit">Отправить</button>
+    </form>
+
+    <p class="hint">
+        Точка появится после проверки администратором
+    </p>
+
+    <h3>Выбери точку на карте:</h3>
+    <div id="pick-map"></div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
+
+<script>
+const latInput = document.getElementById("id_latitude");
+const lngInput = document.getElementById("id_longitude");
+
+// Москва + небольшой разброс
+const baseLng = 37.6173 + (Math.random() - 0.5) * 0.3;
+const baseLat = 55.7558 + (Math.random() - 0.5) * 0.3;
+
+// если пусто — ставим дефолт
+if (!latInput.value) latInput.value = baseLat.toFixed(6);
+if (!lngInput.value) lngInput.value = baseLng.toFixed(6);
+
+const map = new maplibregl.Map({
+    container: 'pick-map',
+    style: 'https://demotiles.maplibre.org/style.json',
+    center: [baseLng, baseLat],
+    zoom: 3
+});
+
+const marker = new maplibregl.Marker({ draggable: true })
+    .setLngLat([lngInput.value, latInput.value])
+    .addTo(map);
+
+// при перетаскивании
+marker.on('dragend', () => {
+    const lngLat = marker.getLngLat();
+    latInput.value = lngLat.lat.toFixed(6);
+    lngInput.value = lngLat.lng.toFixed(6);
+});
+
+// при клике по карте
+map.on('click', (e) => {
+    marker.setLngLat(e.lngLat);
+    latInput.value = e.lngLat.lat.toFixed(6);
+    lngInput.value = e.lngLat.lng.toFixed(6);
+});
+</script>
+
+{% endblock %}

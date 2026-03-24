@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="main-container">
+    <aside class="sidebar">
+        <h2>Карта объектов</h2>
+        <p>Исследуйте интересные локации, добавленные нашим сообществом.</p>
+        
+        <div class="cta-card">
+            <h3>Нашли что-то крутое?</h3>
+            <p>Поделитесь этим местом с другими пользователями!</p>
+            <a href="/add" class="btn-add">Отметить точку</a>
+        </div>
+
+        <div class="stats" style="margin-top: auto; font-size: 0.9rem; color: #666;">
+            <p>Используйте зум для навигации. Нажмите на маркер, чтобы увидеть детали.</p>
+        </div>
+    </aside>
+
+    <div id="map"></div>
+</div>
+
+{{ geojson_points|json_script:"points-data" }}
+
+<script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
+<script>
+  const dataEl = document.getElementById('points-data');
+
+  if (!dataEl) {
+    console.error('points-data not found');
+  } else {
+    const geojson = JSON.parse(dataEl.textContent);
+
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://demotiles.maplibre.org/style.json',
+      center: [37.6173 + (Math.random() - 0.5) * 0.5, 55.7558 + (Math.random() - 0.5) * 0.5],
+
+      zoom: 2.5
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+    map.addControl(
+      new maplibregl.AttributionControl({
+        compact: true,
+        customAttribution: '© OpenStreetMap contributors'
+      })
+    );
+    map.on('load', () => {
+      map.addSource('points', {
+        type: 'geojson',
+        data: geojson
+      });
+
+      map.addLayer({
+        id: 'points-layer',
+        type: 'circle',
+        source: 'points',
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#ff5722',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      });
+
+      map.on('click', 'points-layer', (e) => {
+        const f = e.features[0];
+
+        let html = `
+          <strong>${f.properties.title}</strong>
+          <p>${f.properties.description || ''}</p>
+        `;
+
+        if (f.properties.image) {
+          html += `
+            <img
+              src="${f.properties.image}"
+              style="width:100%; border-radius:6px;"
+            >
+          `;
+        }
+
+        new maplibregl.Popup({ offset: 15 })
+          .setLngLat(f.geometry.coordinates)
+          .setHTML(html)
+          .addTo(map);
+      });
+    });
+  }
+</script>
+{% endblock %}
+
+
+
+
