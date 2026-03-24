@@ -130,7 +130,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 # STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'static' # Папка, куда WhiteNoise будет смотреть
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Папка, куда WhiteNoise будет смотреть
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
