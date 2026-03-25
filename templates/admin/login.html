@@ -1,0 +1,19 @@
+{% extends "admin/login.html" %}
+
+{% block content %}
+<div style="margin-bottom: 20px; padding: 10px; background: #004a9f; border-radius: 8px;">
+  <strong>Demo access:</strong><br>
+  login: <b>demo</b><br>
+  password: <b>demo123</b>
+</div>
+<button onclick="fillDemo()">Use demo account</button>
+
+<script>
+function fillDemo() {
+  document.getElementById("id_username").value = "demo";
+  document.getElementById("id_password").value = "demo123";
+}
+</script>
+
+{{ block.super }}
+{% endblock %}
