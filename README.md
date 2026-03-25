@@ -51,6 +51,6 @@ This project demonstrates capabilities for:
 
 ## Optional Screenshots
 
-![Main Map View](./screenshots/map_view.png)  
-![Admin Panel Demo](./screenshots/admin_demo.png)
+![Main Map View](screenshots/map_view.png)  
+![Admin Panel Demo](screenshots/admin_demo.png)
 
