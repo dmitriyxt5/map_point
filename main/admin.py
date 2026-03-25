@@ -8,22 +8,29 @@ try:
 except admin.sites.NotRegistered:
     pass
 
-class DemoUserAdmin(UserAdmin):
+class DemoPermissionMixin:
+    """
+    Миксин для ограничения прав пользователя 'demo'.
+    """
     def has_delete_permission(self, request, obj=None):
-        return False if request.user.username == "demo" else super().has_delete_permission(request, obj)
+        if request.user.username == "demo":
+            return False
+        return super().has_delete_permission(request, obj)
+
     def has_add_permission(self, request):
-        return False if request.user.username == "demo" else super().has_add_permission(request, obj)
+        if request.user.username == "demo":
+            return False
+        return super().has_add_permission(request)
+
     def has_change_permission(self, request, obj=None):
-        return True if request.user.username == "demo" else super().has_change_permission(request, obj)
+        if request.user.username == "demo":
+            return True
+        return super().has_change_permission(request, obj)
 
-admin.site.register(User, DemoUserAdmin)
+@admin.register(User)
+class DemoUserAdmin(DemoPermissionMixin, UserAdmin):
+    pass
 
-class DemoAdmin(admin.ModelAdmin):
-    def has_delete_permission(self, request, obj=None):
-        return False if request.user.username == "demo" else super().has_delete_permission(request, obj)
-    def has_add_permission(self, request):
-        return False if request.user.username == "demo" else super().has_add_permission(request, obj)
-    def has_change_permission(self, request, obj=None):
-        return True if request.user.username == "demo" else super().has_change_permission(request, obj)
-
-admin.site.register(MapPoint, DemoAdmin)
+@admin.register(MapPoint)
+class DemoAdmin(DemoPermissionMixin, admin.ModelAdmin):
+    list_display = ['__str__']
