@@ -1,17 +1,22 @@
 from django.contrib import admin
-from .models import MapPoint
+from django.contrib.auth.models import User
+from .models import MapPoint 
 
+class DemoAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None):
+        if request.user.username == "demo":
+            return False
+        return super().has_delete_permission(request, obj)
 
-@admin.register(MapPoint)
-class MapPointAdmin(admin.ModelAdmin):
-    list_display = (
-        'title',
-        'status',
-        'latitude',
-        'longitude',
-        'created_at',
-    )
+    def has_add_permission(self, request):
+        if request.user.username == "demo":
+            return False
+        return super().has_add_permission(request)
 
-    list_filter = ('status',)
-    search_fields = ('title', 'description')
-    list_editable = ('status',)
+    def has_change_permission(self, request, obj=None):
+        if request.user.username == "demo":
+            return True
+        return super().has_change_permission(request, obj)
+
+admin.site.register(MapPoint, DemoAdmin)
+admin.site.register(User, DemoAdmin)
